@@ -1,0 +1,64 @@
+#include <xc.h>//libreria
+#include <pwm.h>//libreria pwm.
+
+
+//BITS DE CONFIGURACION DEl PIC.....
+#pragma config PLLDIV = 5, CPUDIV = OSC1_PLL2, USBDIV = 2
+#pragma config FOSC = HSPLL_HS, FCMEN = OFF, IESO = OFF
+#pragma config PWRT = OFF, BOR = OFF, VREGEN = OFF
+#pragma config WDT = OFF, WDTPS = 32768
+#pragma config MCLRE = ON, LPT1OSC = OFF, PBADEN = OFF
+#pragma config STVREN = ON, LVP = OFF, ICPRT = OFF, XINST = OFF
+#define _XTAL_FREQ 48000000
+
+
+
+void main() {
+
+TRISCbits.RC1 = 0;//salida de PWM2 a los motores generado por el setdcpwm();
+TRISCbits.RC2 = 0;//salida de PWM1 a los motores generado por el setdcpwm();
+TRISBbits.TRISB0 = 0; //RB0 es entrada sensor 1.
+TRISBbits.TRISB1 = 0;
+int vel;
+OpenTimer2(T2_PS_1_16);//las cofiguraciones del pwm y el prescaler a utilizar es 16
+OpenPWM1(0x95); //PWM1 trabaja a 4KHz.
+OpenPWM2(0x95); //PWM2 trabaja a 4KHz.
+
+TRISDbits.TRISD2 = 1; //RB0 es entrada sensor 1.
+TRISDbits.TRISD3 = 1; //RB1 es entrada sensor 2.
+TRISDbits.TRISD4 = 1; //RB0 es entrada sensor 3.
+TRISDbits.TRISD5 = 1; //RB1 es entrada sensor 4.
+TRISDbits.TRISD6 = 1; //RB1 es entrada sensor 5.
+
+
+do {
+    
+        vel=570;
+   while (PORTDbits.RD2 == 1 && PORTDbits.RD3 == 1 && PORTDbits.RD4 == 1 && PORTDbits.RD5 == 1 ){//verifica si los dos sensores B0 y B1 estan en 1 para que el motor avanze.
+    SetDCPWM1(vel);//el motor 1 trabaja 50%
+    SetDCPWM2(vel);//el motor 2 tranaja el 50%
+    }
+    while (PORTDbits.RD2 == 0 && PORTDbits.RD3 == 1 && PORTDbits.RD4 == 1 && PORTDbits.RD5 == 0 ){//verifica si los dos sensores B0 y B1 estan en 1 para que el motor avanze.
+    SetDCPWM1(vel);//el motor 1 trabaja 50%
+    SetDCPWM2(vel);//el motor 2 tranaja el 50%
+    }
+    while (PORTDbits.RD2 == 1 && PORTDbits.RD3 == 1 && PORTDbits.RD4 == 0 && PORTDbits.RD5 == 0){//verifica si los dos sensores  B0 y B1 estan en 1 y 0 para que el motor gire a la derecha.
+    SetDCPWM1(vel);//el motor 1 trabaja 50%.
+    SetDCPWM2(0); // el motor 2 esta apagado.
+    }
+    while (PORTDbits.RD2 == 0 && PORTDbits.RD3 == 0 && PORTDbits.RD4 == 1 && PORTDbits.RD5 == 1){//verifica si los dos sensores  B0 y B1 estan en 0 y 1 para que el motor gire a la izquierda.
+    SetDCPWM1(0);//El motor 1 esta apagado.
+    SetDCPWM2(vel);//el motor 2 trabaja el 50%.
+    }
+     while (PORTDbits.RD2 == 0 && PORTDbits.RD3 == 1 && PORTDbits.RD4 == 1 && PORTDbits.RD5 == 1){//verifica si los dos sensores  B0 y B1 estan en 0 y 1 para que el motor gire a la izquierda.
+    SetDCPWM1(vel);//El motor 1 esta apagado.
+    SetDCPWM2(0);//el motor 2 trabaja el 50%.
+    }
+    while (PORTDbits.RD2 == 1 && PORTDbits.RD3 == 1 && PORTDbits.RD4 == 1 && PORTDbits.RD5 == 0){//verifica si los dos sensores  B0 y B1 estan en 0 y 1 para que el motor gire a la izquierda.
+    SetDCPWM1(0);//El motor 1 esta apagado.
+    SetDCPWM2(vel);//el motor 2 trabaja el 50%.
+    }
+       
+    
+    } while(1);//se repitira el ciclo infintamente 
+}
